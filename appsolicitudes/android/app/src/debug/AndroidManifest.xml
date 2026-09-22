@@ -4,4 +4,10 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- El backend local se sirve por HTTP sin cifrar. Android bloquea el
+         trafico en claro desde la API 28, asi que se habilita unicamente en
+         las compilaciones de depuracion. La compilacion de release no lo
+         hereda. -->
+    <application android:usesCleartextTraffic="true"/>
 </manifest>
