@@ -1,0 +1,101 @@
+# ---------------------------------------------------------------
+# Monorepo AppSolicitudes: 3 servicios, 3 imágenes.
+#   postgres -> base de datos (imagen oficial)
+#   laravel  -> API + panel admin (imagen propia)
+#   flutter  -> cliente web + tests (imagen propia)
+# Variables en .env de la raíz (ver .env.example).
+# ---------------------------------------------------------------
+name: appsolicitudes
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: appsolicitudes-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-appsolicitudes}
+      POSTGRES_USER: ${DB_USERNAME:-appsolicitudes}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+      POSTGRES_INITDB_ARGS: "--locale-provider=icu --icu-locale=es-ES --encoding=UTF8"
+    ports:
+      - "${DB_PORT_HOST:-5433}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-appsolicitudes} -d ${DB_DATABASE:-appsolicitudes}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks: [appnet]
+
+  laravel:
+    build:
+      context: .
+      dockerfile: docker/laravel/Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    image: appsolicitudes/laravel:dev
+    container_name: appsolicitudes-api
+    restart: unless-stopped
+    working_dir: /var/www/html
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-appsolicitudes}
+      DB_USERNAME: ${DB_USERNAME:-appsolicitudes}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+      APP_URL: http://localhost:${API_PORT:-8000}
+    ports:
+      - "${API_PORT:-8000}:8000"
+      - "${VITE_PORT:-5173}:5173"
+    volumes:
+      - ./AppSolicitudesAdmin:/var/www/html
+      # Volúmenes nombrados: evitan que el bind mount de Windows destroce
+      # los permisos y la velocidad de vendor/ y node_modules/.
+      - laravel-vendor:/var/www/html/vendor
+      - laravel-node-modules:/var/www/html/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [appnet]
+
+  flutter:
+    build:
+      context: .
+      dockerfile: docker/flutter/Dockerfile
+      args:
+        FLUTTER_VERSION: ${FLUTTER_VERSION:-3.41.9}
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    image: appsolicitudes/flutter:dev
+    container_name: appsolicitudes-app
+    working_dir: /app
+    environment:
+      # La app web corre en el navegador del host: usa localhost, no "laravel".
+      API_BASE_URL: http://localhost:${API_PORT:-8000}
+    ports:
+      - "${WEB_PORT:-8080}:8080"
+    volumes:
+      - ./appsolicitudes:/app
+      - flutter-pub-cache:/home/app/.pub-cache
+      - flutter-build:/app/build
+    depends_on:
+      - laravel
+    # `flutter run` necesita TTY para hot reload (tecla r).
+    stdin_open: true
+    tty: true
+    networks: [appnet]
+
+volumes:
+  postgres-data:
+  laravel-vendor:
+  laravel-node-modules:
+  flutter-pub-cache:
+  flutter-build:
+
+networks:
+  appnet:
+    driver: bridge

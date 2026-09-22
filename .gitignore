@@ -1,0 +1,41 @@
+# ---------------------------------------------------------------
+# Raíz del monorepo (Flutter + Laravel + PostgreSQL)
+# Cada subproyecto mantiene su propio .gitignore.
+# ---------------------------------------------------------------
+
+# Entorno
+.env
+.env.*
+!.env.example
+!.env.docker.example
+
+# Docker (volúmenes locales, overrides de cada dev)
+docker-compose.override.yml
+docker/data/
+docker/postgres/data/
+*.pid
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# Editores
+.idea/
+.vscode/
+.zed/
+.fleet/
+*.swp
+*.swo
+*~
+
+# Herramientas de agentes / asistentes
+.claude/settings.local.json
+.codex/
+.cursor/
+
+# Logs y temporales globales
+*.log
+tmp/
+temp/
