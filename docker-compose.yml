@@ -53,6 +53,7 @@ services:
       - "${VITE_PORT:-5173}:5173"
     volumes:
       - ./AppSolicitudesAdmin:/var/www/html
+      - ./docker/laravel/uploads.ini:/usr/local/etc/php/conf.d/zz-uploads.ini:ro
       # Volúmenes nombrados: evitan que el bind mount de Windows destroce
       # los permisos y la velocidad de vendor/ y node_modules/.
       - laravel-vendor:/var/www/html/vendor

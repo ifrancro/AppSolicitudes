@@ -12,5 +12,10 @@ class DatabaseSeeder extends Seeder
             CatalogosSeeder::class,
             UsuariosPruebaSeeder::class,
         ]);
+
+        // Solicitudes de ejemplo: solo en desarrollo, nunca en pruebas ni producción.
+        if (app()->environment('local')) {
+            $this->call(DemoSolicitudesSeeder::class);
+        }
     }
 }
