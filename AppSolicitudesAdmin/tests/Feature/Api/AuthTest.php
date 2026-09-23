@@ -61,7 +61,8 @@ class AuthTest extends TestCase
     {
         $this->postJson('/api/v1/auth/login', [])
             ->assertStatus(422)
-            ->assertJsonValidationErrors(['email', 'password']);
+            ->assertJsonValidationErrors(['email', 'password'])
+            ->assertJsonPath('errors.email.0', 'El campo correo electrónico es obligatorio.');
     }
 
     public function test_login_de_usuario_desactivado_da_403(): void
