@@ -97,10 +97,11 @@ Otro valor da 422.
 ### 1.5 Errores
 
 Todo error lleva `message` (texto en español, apto para mostrar al usuario).
-Solo el 422 añade `errors`, en el formato nativo de Laravel.
+Solo el 422 añade `errors`, en el formato nativo de Laravel; su `message` es el
+primer error (más «(y N errores más)» si hay varios).
 
 ```json
-{ "message": "Los datos proporcionados no son válidos.", "errors": { "titulo": ["El campo título es obligatorio."] } }
+{ "message": "El campo título es obligatorio. (y 1 error más)", "errors": { "titulo": ["El campo título es obligatorio."], "descripcion": ["El campo descripción es obligatorio."] } }
 ```
 
 `errors` es `{campo: [mensajes]}`; los nombres de campo son los del cuerpo de
