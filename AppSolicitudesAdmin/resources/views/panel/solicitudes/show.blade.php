@@ -44,7 +44,84 @@
         </section>
     </div>
 
-    @stack('acciones')
+    <div class="grid grid--2">
+        @can('classify', $solicitud)
+            <section class="card">
+                <h2>Clasificar</h2>
+                <form method="POST" action="{{ route('panel.solicitudes.clasificar', $solicitud) }}" class="filters">
+                    @csrf
+                    <label>Tipo
+                        <select name="tipo_id">
+                            @foreach ($catalogos['tipos'] as $tipo)
+                                <option value="{{ $tipo->id }}" @selected(old('tipo_id', $solicitud->tipo_id) == $tipo->id)>{{ str_replace('_', ' ', $tipo->nombre) }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                    <label>Prioridad
+                        <select name="prioridad_id">
+                            @foreach ($catalogos['prioridades'] as $prioridad)
+                                <option value="{{ $prioridad->id }}" @selected(old('prioridad_id', $solicitud->prioridad_id) == $prioridad->id)>{{ $prioridad->nombre }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                    <button type="submit">Guardar</button>
+                </form>
+            </section>
+        @endcan
+
+        @can('assign', $solicitud)
+            <section class="card">
+                <h2>{{ $solicitud->asignacionActiva ? 'Reasignar' : 'Asignar' }} responsable</h2>
+                <form method="POST" action="{{ route('panel.solicitudes.asignar', $solicitud) }}">
+                    @csrf
+                    <label>Responsable
+                        <select name="responsable_id" required>
+                            <option value="">Selecciona…</option>
+                            @foreach ($responsables as $responsable)
+                                <option value="{{ $responsable->id }}">{{ $responsable->nombre }} ({{ $responsable->asignaciones_activas }} activas)</option>
+                            @endforeach
+                        </select>
+                    </label>
+                    <label style="margin-top:8px">Comentario (opcional)
+                        <textarea name="comentario" maxlength="500">{{ old('comentario') }}</textarea>
+                    </label>
+                    <p><button type="submit">Asignar</button></p>
+                </form>
+            </section>
+        @endcan
+
+        @if (count($destinos) > 0)
+            <section class="card">
+                <h2>Cambiar estado</h2>
+                <form method="POST" action="{{ route('panel.solicitudes.estado', $solicitud) }}">
+                    @csrf
+                    <label>Nuevo estado
+                        <select name="estado_id" required>
+                            @foreach ($destinos as $destino)
+                                @php($estadoDestino = $catalogos['estados']->firstWhere('nombre', $destino->value))
+                                <option value="{{ $estadoDestino->id }}">{{ str_replace('_', ' ', $destino->value) }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                    <label style="margin-top:8px">Comentario (obligatorio al cancelar)
+                        <textarea name="comentario" maxlength="500">{{ old('comentario') }}</textarea>
+                    </label>
+                    <p><button type="submit">Actualizar estado</button></p>
+                </form>
+            </section>
+        @endif
+
+        @can('createAction', $solicitud)
+            <section class="card">
+                <h2>Registrar acción realizada</h2>
+                <form method="POST" action="{{ route('panel.solicitudes.acciones', $solicitud) }}">
+                    @csrf
+                    <textarea name="descripcion" maxlength="1000" required placeholder="Describe lo que hiciste…">{{ old('descripcion') }}</textarea>
+                    <p><button type="submit">Registrar</button></p>
+                </form>
+            </section>
+        @endcan
+    </div>
 
     <div class="grid grid--2">
         <section class="card">
@@ -79,7 +156,7 @@
             <h2>Evidencias</h2>
             <ul>
                 @foreach ($solicitud->adjuntos as $adjunto)
-                    <li>{{ basename($adjunto->url_archivo) }} <span class="muted">({{ $adjunto->tipo_archivo }}, subido por {{ $adjunto->autor->nombre }})</span></li>
+                    <li><a href="{{ route('panel.adjuntos.descargar', $adjunto) }}" target="_blank" rel="noopener">{{ basename($adjunto->url_archivo) }}</a> <span class="muted">({{ $adjunto->tipo_archivo }}, subido por {{ $adjunto->autor->nombre }})</span></li>
                 @endforeach
             </ul>
         </section>
