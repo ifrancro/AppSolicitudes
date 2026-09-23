@@ -5,6 +5,9 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/auth_controller.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/perfil_screen.dart';
+import '../../features/notificaciones/presentation/notificaciones_screen.dart';
+import '../../features/solicitudes/presentation/mis_solicitudes_screen.dart';
+import 'shell_navegacion.dart';
 
 /// Rutas de la aplicación en un solo lugar, para no repetir cadenas sueltas.
 class Rutas {
@@ -12,6 +15,8 @@ class Rutas {
 
   static const String cargando = '/';
   static const String login = '/login';
+  static const String solicitudes = '/solicitudes';
+  static const String notificaciones = '/notificaciones';
   static const String perfil = '/perfil';
 }
 
@@ -47,9 +52,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return ubicacion == Rutas.login ? null : Rutas.login;
       }
 
-      // Con sesión activa no tiene sentido quedarse en login ni en la carga.
+      // Con sesión activa no tiene sentido quedarse en login ni en la carga;
+      // la pestaña inicial es el listado de solicitudes.
       if (ubicacion == Rutas.login || ubicacion == Rutas.cargando) {
-        return Rutas.perfil;
+        return Rutas.solicitudes;
       }
       return null;
     },
@@ -62,9 +68,36 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: Rutas.login,
         builder: (context, state) => const LoginScreen(),
       ),
-      GoRoute(
-        path: Rutas.perfil,
-        builder: (context, state) => const PerfilScreen(),
+      // Cada rama conserva su propia pila de navegación y su estado.
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) =>
+            ShellNavegacion(navigationShell: navigationShell),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Rutas.solicitudes,
+                builder: (context, state) => const MisSolicitudesScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Rutas.notificaciones,
+                builder: (context, state) => const NotificacionesScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Rutas.perfil,
+                builder: (context, state) => const PerfilScreen(),
+              ),
+            ],
+          ),
+        ],
       ),
     ],
   );
