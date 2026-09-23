@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\EstadoNombre;
 use App\Enums\RolNombre;
 use App\Models\Solicitud;
 use App\Models\User;
@@ -66,6 +67,24 @@ class SolicitudPolicy
     public function changeState(User $user, Solicitud $solicitud): bool
     {
         return $this->viewAssignments($user, $solicitud);
+    }
+
+    /**
+     * PATCH /solicitudes/{id}/estado hacia un destino concreto (contrato §6.7).
+     * Personal y administrador piden en_proceso, cerrada o cancelada; el
+     * responsable asignado solo en_proceso y cerrada (cancelar no le toca).
+     */
+    public function changeStateTo(User $user, Solicitud $solicitud, EstadoNombre $destino): bool
+    {
+        if (! $this->changeState($user, $solicitud)) {
+            return false;
+        }
+
+        $permitidos = $this->viewAny($user)
+            ? [EstadoNombre::EnProceso, EstadoNombre::Cerrada, EstadoNombre::Cancelada]
+            : [EstadoNombre::EnProceso, EstadoNombre::Cerrada];
+
+        return in_array($destino, $permitidos, true);
     }
 
     /** POST /solicitudes/{id}/acciones: solo quien la tiene asignada. */
