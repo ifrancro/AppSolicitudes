@@ -14,6 +14,13 @@ class Adjunto extends Model
 
     public const UPDATED_AT = null;
 
+    /** Tipos admitidos (mime real => extensión con la que se guarda). */
+    public const EXTENSIONES = [
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'application/pdf' => 'pdf',
+    ];
+
     protected $table = 'adjuntos';
 
     protected $fillable = ['solicitud_id', 'url_archivo', 'tipo_archivo', 'subido_por'];
