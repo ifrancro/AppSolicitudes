@@ -29,5 +29,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('listar-responsables', fn (User $user) => $user->tieneRol(
             RolNombre::PersonalAdministrativo, RolNombre::Administrador
         ));
+
+        // El panel web es del personal; el estudiante usa la app móvil.
+        Gate::define('acceder-panel', fn (User $user) => $user->esDeGestion());
     }
 }
