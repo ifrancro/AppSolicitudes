@@ -12,6 +12,9 @@
         <div class="topbar__inner">
             <a class="brand" href="{{ route('panel.inicio') }}">Campus Connect</a>
             <nav class="nav" aria-label="Principal">
+                @can('ver-reportes')
+                    <a href="{{ route('panel.dashboard') }}" @if (request()->routeIs('panel.dashboard')) aria-current="page" @endif>Dashboard</a>
+                @endcan
                 @can('viewAny', \App\Models\Solicitud::class)
                     <a href="{{ route('panel.solicitudes.index') }}" @if (request()->routeIs('panel.solicitudes.index')) aria-current="page" @endif>Solicitudes</a>
                 @endcan

@@ -19,6 +19,6 @@ class PanelController extends Controller
             return redirect()->route('panel.solicitudes.asignadas');
         }
 
-        return redirect()->route('panel.solicitudes.index');
+        return redirect()->route($usuario->esAdministrador() ? 'panel.dashboard' : 'panel.solicitudes.index');
     }
 }
