@@ -21,8 +21,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libglu1-mesa openssh-client \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# El UID 1000 ya existe en ubuntu:24.04 (usuario "ubuntu"): se renombra.
-RUN if id -u 1000 >/dev/null 2>&1; then usermod -l app -d /home/app -m "$(id -un 1000)"; \
+# El UID 1000 ya existe en ubuntu:24.04 (usuario y grupo "ubuntu"): se renombran ambos.
+RUN if id -u 1000 >/dev/null 2>&1; then \
+        old_user="$(id -un 1000)"; old_group="$(id -gn 1000)"; \
+        usermod -l app -d /home/app -m "$old_user" && groupmod -n app "$old_group"; \
     else groupadd -g ${GID} app && useradd -u ${UID} -g ${GID} -m -s /bin/bash app; fi
 
 RUN git clone --depth 1 --branch ${FLUTTER_VERSION} \
